@@ -13,13 +13,29 @@ import java.util.Map;
  * @author: Pinzhuo Zhao, StudentID:1043915
  * @create: 2021-03-24 17:15
  **/
-public class DictionaryUtils {
-    private static File dictionary = new File("dictionary.txt");
+public class MyDictionary {
 
-    public static Boolean isLegal(String key){
+    private File dictionary = new File("dictionary.txt");
+
+    public MyDictionary(File dictionary) {
+        this.dictionary = dictionary;
+    }
+    public MyDictionary() {
+    }
+
+    public File getDictionary() {
+        return dictionary;
+    }
+
+    public void setDictionary(File dictionary) {
+        this.dictionary = dictionary;
+    }
+
+    public  Boolean isLegal(String key){
         return (key.matches("^[a-zA-Z]+$"));
     }
-    public static Map<String,List<String>> getMap(File file){
+
+    public  Map<String,List<String>> getMap(File file){
         ObjectInputStream ois = null;
         Map<String,List<String>> dictionaryMap = null;
         try {
@@ -45,7 +61,7 @@ public class DictionaryUtils {
         return dictionaryMap;
     }
 
-    public static void serializeMap(Map<String, List<String>> map){
+    public void serializeMap(Map<String, List<String>> map){
         ObjectOutputStream oos = null;
         try {
             oos = new ObjectOutputStream(new FileOutputStream(dictionary));
@@ -65,7 +81,7 @@ public class DictionaryUtils {
         }
     }
 
-    public static String query(String key) {
+    public String query(String key) {
 //        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(dictionary)));
         if (!isLegal(key)){
             throw new NotAWordException("Your input is not a valid word, it should only contain letters");
@@ -89,7 +105,7 @@ public class DictionaryUtils {
     //synchronized method here(static method),
     //it will stop other threads from calling other synchronized method in this class
     //to ensure that the threads won't interfere each other
-    public static synchronized void add(String key, List<String> meanings){
+    public synchronized void add(String key, List<String> meanings){
         if (!isLegal(key)){
             throw new NotAWordException("The word you're going to add is not valid, it should only contain letters");
         }
@@ -109,7 +125,7 @@ public class DictionaryUtils {
 
     }
 
-    public static void remove(String key){
+    public void remove(String key){
         if (!isLegal(key)){
             throw new NotAWordException("The word you're going to remove is not valid, it should only contain letters");
         }
@@ -125,7 +141,7 @@ public class DictionaryUtils {
 
     }
 
-    public static void update(String key, List<String> meanings){
+    public void update(String key, List<String> meanings){
         if (!isLegal(key)){
             throw new NotAWordException("The word you're going to update is not valid, it should only contain letters");
         }
@@ -150,7 +166,8 @@ public class DictionaryUtils {
 //        strings.add("uou");
 //        add("Pz",strings);
 //        remove("Pz");
-        System.out.println(query("Pz"));
+        MyDictionary myDictionary = new MyDictionary();
+        System.out.println(myDictionary.query("Pz"));
 
 
 

@@ -13,15 +13,18 @@ public class TCPDictionaryServer {
     private static int port;
     // Identifies the user number connected
     private static int counter = 0;
+
     private static void serve(Socket client){
-        BufferedReader in = null;
+        ObjectInputStream in = null;
         BufferedWriter out = null;
         try {
-            in = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8));
+            in = new ObjectInputStream(client.getInputStream());
             out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8));
-            in.readLine();
-            //在这里往下下，看客户端会发来怎样的一条信息，然后相应调工具类处理
+            in.readObject();
+            //在这里往下，看客户端会发来怎样的一条信息，然后相应调字典类处理
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -36,7 +39,7 @@ public class TCPDictionaryServer {
         try {
             socket = new ServerSocket(port);
             while (true){
-                System.out.println("Remote DictionaryUtils Server Launched on port " + port);
+                System.out.println("Remote MyDictionary Server Launched on port " + port);
                 Socket client = socket.accept();
                 counter++;
                 Thread serverThread = new Thread(()->serve(client));
