@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -13,39 +12,45 @@ import java.util.List;
  * @create: 2021-03-28 20:13
  **/
 public class ClientGUI extends JFrame {
-    Box box,boxone,boxtwo;
-    Box text1,text2,text3,text4,text5;
-    JTextField one,two;
+    Box wordAndMeaningsBox, textAreaBox, ipAndPortBox, aggregatedBox,boxfour;
+    Box wordAndMeaningsLabelBox, wordAndMeaningsTextBox, responseBox, ipAndPortLabelBox, ipAndPortTextBox;
+    JTextField wordTextField, meaningsTextField, ipTextField, portTextField;
     JTextArea response;
-    JButton button1,button2,button3,button4,button5;
+    JButton queryButton, addButton, removeButton, updateButton, quitButton, clearButton, connectButton;
     //ButtonExit buttonexit;
     public ClientGUI() {
         setLayout(new FlowLayout());
         init();
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
     void init() {
-        one = new JTextField(10);
-        two = new JTextField(10);
+        ipTextField = new JTextField(10);
+        portTextField = new JTextField(10);
+        wordTextField = new JTextField(10);
+        meaningsTextField = new JTextField(10);
         response = new JTextArea(9,35);
-        box = Box.createHorizontalBox();
-        boxone = Box.createVerticalBox();
-        button1 = new JButton("Query");
-        button1.addActionListener(new ActionListener() {
+        wordAndMeaningsBox = Box.createHorizontalBox();
+        textAreaBox = Box.createVerticalBox();
+        ipAndPortBox = Box.createHorizontalBox();
+        aggregatedBox = Box.createVerticalBox();
+        queryButton = new JButton("Query");
+        queryButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 //trim the input in case the input contains spaces
-                TCPDictionaryClient.sendRequest("query",one.getText().trim().toLowerCase());
+                TCPDictionaryClient.sendRequest("query", wordTextField.getText().trim().toLowerCase());
+                wordTextField.setText("");
             }
         });
-        button2 = new JButton("Add");
-        button2.addActionListener(new ActionListener() {
+        addButton = new JButton("Add");
+        addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                String input = two.getText();
+                String input = meaningsTextField.getText();
                 String[] split = input.split("[^a-zA-Z ]+");
                 List<String> meanings = new ArrayList<String>();
                 for (String s : split) {
@@ -54,14 +59,49 @@ public class ClientGUI extends JFrame {
                     }
                 }
 
-                TCPDictionaryClient.sendRequest("add",one.getText().trim().toLowerCase(),meanings);
+                TCPDictionaryClient.sendRequest("add", wordTextField.getText().trim().toLowerCase(),meanings);
+                wordTextField.setText("");
+                meaningsTextField.setText("");
 
             }
         });
-        button3 = new JButton("Remove");
-        button4 = new JButton("Update");
-        button5 = new JButton("Quit");
-        button5.addActionListener(new ActionListener() {
+        removeButton = new JButton("Remove");
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int n = JOptionPane.showConfirmDialog(null,"Are you sure you want to delete this word?","Delete Confirmation",JOptionPane.YES_NO_OPTION);
+                //only delete the word if the user clicked yes
+                if (n == JOptionPane.YES_OPTION) {
+                    TCPDictionaryClient.sendRequest("remove", wordTextField.getText().trim().toLowerCase());
+                    wordTextField.setText("");
+                } else if (n == JOptionPane.NO_OPTION) {
+                }
+
+
+
+            }
+        });
+        updateButton = new JButton("Update");
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = meaningsTextField.getText();
+                String[] split = input.split("[^a-zA-Z ]+");
+                List<String> meanings = new ArrayList<String>();
+                for (String s : split) {
+                    if (!s.trim().isEmpty()) {
+                        meanings.add(s);
+                    }
+                }
+
+                TCPDictionaryClient.sendRequest("update", wordTextField.getText().trim().toLowerCase(),meanings);
+                wordTextField.setText("");
+                meaningsTextField.setText("");
+
+            }
+        });
+        quitButton = new JButton("Disconnect");
+        quitButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -69,31 +109,70 @@ public class ClientGUI extends JFrame {
                 response.setText("You have been disconnected from the server, now you can close the window");
             }
         });
-        text1 = Box.createVerticalBox();
-        text2 = Box.createVerticalBox();
-        text3 = Box.createHorizontalBox();
-        text1.add(new JLabel("Word："));
-        text1.add(new JLabel("Meanings："));
 
-        text2.add(one);
-        text2.add(two);
-        text3.add(response);
+        connectButton = new JButton("Connect");
+        connectButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String ip = ipTextField.getText().trim();
+                String port = portTextField.getText().trim();
+                TCPDictionaryClient.setIPAndPort(ip,port);
+            }
+        });
+
+        clearButton = new JButton("Clear");
+        clearButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                wordTextField.setText("");
+                meaningsTextField.setText("");
+                response.setText("");
+            }
+        });
+        ipAndPortLabelBox = Box.createVerticalBox();
+        ipAndPortTextBox = Box.createVerticalBox();
+        wordAndMeaningsLabelBox = Box.createVerticalBox();
+        wordAndMeaningsTextBox = Box.createVerticalBox();
+        responseBox = Box.createHorizontalBox();
+        ipAndPortLabelBox.add(new JLabel("IP Address: "));
+        ipAndPortLabelBox.add(new JLabel("Port: "));
+        wordAndMeaningsLabelBox.add(new JLabel("Word："));
+        wordAndMeaningsLabelBox.add(new JLabel("Meanings："));
+        ipAndPortTextBox.add(ipTextField);
+        ipAndPortTextBox.add(portTextField);
+        wordAndMeaningsTextBox.add(wordTextField);
+        wordAndMeaningsTextBox.add(meaningsTextField);
+        responseBox.add(response);
         //text2.addAncestorListener(listener);
-        box.add(text1);
-        box.add(Box.createHorizontalStrut(215));
-        box.add(text2);
-        boxone.add(text3);
-        add(box);
-        add(boxone);
-        add(button1);
-        add(button2);
-        add(button3);
-        add(button4);
-        add(button5);
+        ipAndPortBox.add(ipAndPortLabelBox);
+        ipAndPortBox.add(Box.createHorizontalStrut(215));
+        ipAndPortBox.add(ipAndPortTextBox);
+
+        wordAndMeaningsBox.add(wordAndMeaningsLabelBox);
+        wordAndMeaningsBox.add(Box.createHorizontalStrut(215));
+        wordAndMeaningsBox.add(wordAndMeaningsTextBox);
+        textAreaBox.add(responseBox);
+        aggregatedBox.add(ipAndPortBox);
+        aggregatedBox.add(connectButton);
+        aggregatedBox.add(quitButton);
+        aggregatedBox.add(Box.createVerticalStrut(50));
+        aggregatedBox.add(textAreaBox);
+        aggregatedBox.add(Box.createVerticalStrut(50));
+        aggregatedBox.add(wordAndMeaningsBox);
+
+        aggregatedBox.add(queryButton);
+        aggregatedBox.add(addButton);
+        aggregatedBox.add(removeButton);
+        aggregatedBox.add(updateButton);
+        aggregatedBox. add(clearButton);
+
+        add(aggregatedBox);
+
+
+
     }
 
-    public static void main(String[] args) {
-        ClientGUI view = new ClientGUI();
-    }
 
 }

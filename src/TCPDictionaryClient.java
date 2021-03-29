@@ -9,9 +9,14 @@ import java.util.List;
  * @create: 2021-03-24 17:11
  **/
 public class TCPDictionaryClient {
-    private static String ip = "localhost";
-    private static int port =9999;
-    private static volatile Boolean connect;
+    private static String ip;
+    private static Integer port;
+
+    /** the flag to check if the client is connected to the server or not **/
+    private static volatile Boolean connect = false;
+
+    /** the ClientMessage Object(contains all the information of client's request)
+     *  to be sent  to the server **/
     private static volatile ClientMessage message;
 
     public static void main(String[] args) {
@@ -20,27 +25,34 @@ public class TCPDictionaryClient {
         DataInputStream in = null;
         ClientGUI gui = new ClientGUI();
         try {
-
-            client = new Socket(ip,port);
-            connect = true;
+            //program won't proceed before the user enters ip and port in the GUI
+            while (!connect){
+                if (ip != null && port != null){
+                    //establish the connection with server using the ip and port provided by the user
+                    client = new Socket(ip,port);
+                    connect = true;
+                    gui.response.setText("You have connected to the server " + ip + "at port " + port);
+                }
+            }
             out = new ObjectOutputStream(client.getOutputStream());
             in = new DataInputStream(client.getInputStream());
             while (connect) {
-                if (message != null){
-                    out.writeObject(message);
-                    out.flush();
-                    message = null;
-                    String result = in.readUTF();
-                    System.out.println(result);
-                    gui.response.setText(result);
-                }
+                //program won't proceed before the user perform any operation(query, add...etc)
+                    if (message != null) {
+                        out.writeObject(message);
+                        out.flush();
+                        message = null;
+                        String result = in.readUTF();
+                        System.out.println(result);
+                        //print the response from the server on the text area of the GUI
+                        gui.response.setText(result);
+                    }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
         finally{
-            System.out.println("over");
             try {
                 if (client != null) {
                     client.close();
@@ -53,17 +65,46 @@ public class TCPDictionaryClient {
             }
         }
     }
+
+    /**
+     * provide a button for user to perform operations
+     * @param requestMethod
+     * @param word
+     * @param meanings
+     */
     public static void sendRequest(String requestMethod, String word, List<String> meanings){
-        ClientMessage message = new ClientMessage(requestMethod, word, meanings);
-        TCPDictionaryClient.message = message;
-    }
-    public static void sendRequest(String requestMethod, String word){
-        ClientMessage message = new ClientMessage(requestMethod, word);
-        TCPDictionaryClient.message = message;
+        if (connect) {
+            ClientMessage message = new ClientMessage(requestMethod, word, meanings);
+            TCPDictionaryClient.message = message;
+        }
     }
 
-    //provide a button for user to end the session/disconnect from the server
+    /**
+     * overloaded method, it doesn't take meanings as this one is for query and delete operations
+     * @param requestMethod
+     * @param word
+     */
+    public static void sendRequest(String requestMethod, String word){
+        if (connect) {
+            ClientMessage message = new ClientMessage(requestMethod, word);
+            TCPDictionaryClient.message = message;
+        }
+    }
+
+    /**
+     * provide a button for user to end the session/disconnect from the server
+     */
     public static void terminate(){
         connect = false;
+    }
+
+    /**
+     * the button for user to enter ip and port to connect to the server
+     * @param ip
+     * @param port
+     */
+    public static void setIPAndPort(String ip, String port){
+        TCPDictionaryClient.ip = ip;
+        TCPDictionaryClient.port = Integer.parseInt(port);
     }
 }

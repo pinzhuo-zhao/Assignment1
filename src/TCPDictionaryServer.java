@@ -35,7 +35,7 @@ public class TCPDictionaryServer {
 
                 } else if (requestMethod.equals("add")) {
                     result = dictionary.add(message.getWord(), message.getMeanings());
-                } else if (requestMethod.equals("delete")) {
+                } else if (requestMethod.equals("remove")) {
                     result =  dictionary.remove(message.getWord());
                 } else if (requestMethod.equals("update")) {
                     result = dictionary.update(message.getWord(), message.getMeanings());
@@ -43,8 +43,6 @@ public class TCPDictionaryServer {
                 out.writeUTF(result);
                 out.flush();
             }
-
-            //在这里往下，看客户端会发来怎样的一条信息，然后相应调字典类处理
 
         } catch (IOException e) {
             e.printStackTrace();
