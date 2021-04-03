@@ -1,7 +1,6 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @program: Assignment1
@@ -10,9 +9,9 @@ import java.nio.charset.StandardCharsets;
  * @create: 2021-03-24 16:09
  **/
 public class TCPDictionaryServer {
-    private static int port =9999;
-    // Identifies the user number connected
-    private static int counter = 0;
+    private static volatile Integer port;
+    private static volatile String filePath;
+    private static Boolean launched = false;
 
     private static void serve(Socket client, MyDictionary dictionary){
         ObjectInputStream in = null;
@@ -52,36 +51,54 @@ public class TCPDictionaryServer {
 
     }
     public static void main(String[] args) {
+// updated a GUI for Server, so no need for taking parameters from command line
 //        String portFromInput = args[0];
 //        String filePath = args[1];
 //        port = Integer.parseInt(portFromInput);
-        //put the IO Objects and the Socket here so we can close them in the finally block
-        MyDictionary dictionary = new MyDictionary(new File("dictionary.txt"));
+        ServerGUI gui = new ServerGUI();
         ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(port);
-            System.out.println("Remote MyDictionary Server Launched on port " + port);
-            while (true){
-                Socket client = socket.accept();
-                counter++;
-                Thread serverThread = new Thread(()->serve(client, dictionary));
-                serverThread.start();
+        while (!launched) {
+            if (port != null && filePath != null) {
+                try {
+                    socket = new ServerSocket(port);
+                    launched = true;
+                    gui.getResponse().setText("Remote Dictionary Server launched at port: " + port);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        //close all the resources when the program is about to end
-        finally {
+            MyDictionary dictionary = new MyDictionary(new File(filePath));
+            dictionary.loadToMap();
             try {
-                if (socket != null) {
-                    socket.close();
+                System.out.println("Remote Dictionary Server Launched at port " + port);
+                while (true) {
+                    Socket client = socket.accept();
+                    Thread serverThread = new Thread(() -> serve(client, dictionary));
+                    serverThread.start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            //close all the resources when the program is about to end
+            finally {
+                try {
+                    if (socket != null) {
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
         }
 
+    public static void setPortAndPath(String port, String path){
+        TCPDictionaryServer.port = Integer.parseInt(port);
+        TCPDictionaryServer.filePath = path;
 
     }
+
 
 }

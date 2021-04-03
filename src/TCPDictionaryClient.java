@@ -1,5 +1,7 @@
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -9,8 +11,8 @@ import java.util.List;
  * @create: 2021-03-24 17:11
  **/
 public class TCPDictionaryClient {
-    private static String ip;
-    private static Integer port;
+    private static volatile String ip;
+    private static volatile Integer port;
 
     /** the flag to check if the client is connected to the server or not **/
     private static volatile Boolean connect = false;
@@ -31,7 +33,7 @@ public class TCPDictionaryClient {
                     //establish the connection with server using the ip and port provided by the user
                     client = new Socket(ip,port);
                     connect = true;
-                    gui.response.setText("You have connected to the server " + ip + "at port " + port);
+                    gui.getResponse().setText("You have connected to the server " + ip + "at port " + port);
                 }
             }
             out = new ObjectOutputStream(client.getOutputStream());
@@ -45,14 +47,20 @@ public class TCPDictionaryClient {
                         String result = in.readUTF();
                         System.out.println(result);
                         //print the response from the server on the text area of the GUI
-                        gui.response.setText(result);
+                        gui.getResponse().setText(result);
                     }
             }
 
+        } catch (UnknownHostException e) {
+            gui.getResponse().setText("No server found! Please check your entries for IP and port again");
+            e.printStackTrace();
+        } catch (ConnectException e) {
+            gui.getResponse().setText("No server found! Please check your entries for IP and port again");
+            e.printStackTrace();
+
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally{
+        } finally{
             try {
                 if (client != null) {
                     client.close();

@@ -12,12 +12,11 @@ import java.util.List;
  * @create: 2021-03-28 20:13
  **/
 public class ClientGUI extends JFrame {
-    Box wordAndMeaningsBox, textAreaBox, ipAndPortBox, aggregatedBox,boxfour;
-    Box wordAndMeaningsLabelBox, wordAndMeaningsTextBox, responseBox, ipAndPortLabelBox, ipAndPortTextBox;
-    JTextField wordTextField, meaningsTextField, ipTextField, portTextField;
-    JTextArea response;
-    JButton queryButton, addButton, removeButton, updateButton, quitButton, clearButton, connectButton;
-    //ButtonExit buttonexit;
+    private Box wordAndMeaningsBox, textAreaBox, ipAndPortBox, aggregatedBox;
+    private Box wordAndMeaningsLabelBox, wordAndMeaningsTextBox, responseBox, ipAndPortLabelBox, ipAndPortTextBox;
+    private JTextField wordTextField, meaningsTextField, ipTextField, portTextField;
+    private JTextArea response;
+    private JButton queryButton, addButton, removeButton, updateButton, quitButton, clearButton, connectButton;
     public ClientGUI() {
         setLayout(new FlowLayout());
         init();
@@ -25,12 +24,17 @@ public class ClientGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
-    void init() {
+
+    public JTextArea getResponse() {
+        return response;
+    }
+
+    private void init() {
         ipTextField = new JTextField(10);
         portTextField = new JTextField(10);
         wordTextField = new JTextField(10);
         meaningsTextField = new JTextField(10);
-        response = new JTextArea(9,35);
+        response = new JTextArea(10,35);
         wordAndMeaningsBox = Box.createHorizontalBox();
         textAreaBox = Box.createVerticalBox();
         ipAndPortBox = Box.createHorizontalBox();
@@ -145,7 +149,6 @@ public class ClientGUI extends JFrame {
         wordAndMeaningsTextBox.add(wordTextField);
         wordAndMeaningsTextBox.add(meaningsTextField);
         responseBox.add(response);
-        //text2.addAncestorListener(listener);
         ipAndPortBox.add(ipAndPortLabelBox);
         ipAndPortBox.add(Box.createHorizontalStrut(215));
         ipAndPortBox.add(ipAndPortTextBox);

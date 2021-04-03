@@ -1,7 +1,6 @@
-import exceptions.InvalidWordOperationException;
-import exceptions.NotAWordException;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,11 +12,14 @@ import java.util.Map;
  **/
 public class MyDictionary {
 
-    private File dictionaryFile = new File("dictionary.txt");
+    private File dictionaryFile;
+
+    private Map<String, List<String>> dictionaryMap = new HashMap<>();
 
     public MyDictionary(File dictionary) {
         this.dictionaryFile = dictionary;
     }
+
     public MyDictionary() {
     }
 
@@ -33,15 +35,20 @@ public class MyDictionary {
         return (key.matches("^[a-zA-Z]+$"));
     }
 
-    public  Map<String,List<String>> getMap(File file){
+    /**
+     * Load the Java Object Serialization from the txt file to in-memory data structure
+     */
+    public void loadToMap(){
         ObjectInputStream ois = null;
-        Map<String,List<String>> dictionaryMap = null;
+        Map<String,List<String>> map;
         try {
-            ois = new ObjectInputStream(new FileInputStream(file));
+            ois = new ObjectInputStream(new FileInputStream(dictionaryFile));
             Object obj = ois.readObject();
             if (obj instanceof Map){
-                dictionaryMap = (Map<String, List<String>>) obj;
+                map = (Map<String, List<String>>) obj;
+                dictionaryMap = map;
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -56,9 +63,13 @@ public class MyDictionary {
                 e.printStackTrace();
             }
         }
-        return dictionaryMap;
+
     }
 
+    /**
+     * update the txt file by serializing the hashmap to the txt file again
+     * @param map
+     */
     public void serializeMap(Map<String, List<String>> map){
         ObjectOutputStream oos = null;
         try {
@@ -79,13 +90,15 @@ public class MyDictionary {
         }
     }
 
+    /**
+     * Provide a word and query the meanings of a word
+     * @param key
+     * @return the associated meanings of the word
+     */
     public String query(String key) {
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(dictionary)));
         if (!isLegal(key)){
-//            throw new NotAWordException("Your input is not a valid word, it should only contain letters");
             return "Your input is not a valid word, it should only contain letters";
         }
-        Map<String, List<String>> dictionaryMap = getMap(dictionaryFile);
         List<String> meanings = dictionaryMap.get(key);
         if (meanings != null && meanings.size()>0) {
             int i = 1;
@@ -98,19 +111,23 @@ public class MyDictionary {
             return allMeanings;
         }
         else{
-//            throw new InvalidWordOperationException("The word doesn't exist in our dictionary");
             return "The word doesn't exist in our dictionary";
         }
     }
-    //synchronized method here(static method),
-    //it will stop other threads from calling other synchronized method in this class
-    //to ensure that the threads won't interfere each other
+
+
+    /**
+     * To add a new pair of word and its meanings to the dictionary(HashMap)
+     * Synchronized keyword added here to ensure that the threads won't interfere each other
+     * @param key
+     * @param meanings
+     * @return
+     */
     public synchronized String add(String key, List<String> meanings){
         if (!isLegal(key)){
 //            throw new NotAWordException("The word you're going to add is not valid, it should only contain letters");
             return "The word you're going to add is not valid, it should only contain letters";
         }
-        Map<String, List<String>> dictionaryMap = getMap(dictionaryFile);
         if (dictionaryMap.get(key) != null){
 //            throw new InvalidWordOperationException("The word already exists");
             return "The word already exists";
@@ -128,12 +145,16 @@ public class MyDictionary {
 
     }
 
+    /**
+     * provide a word and remove the word from the dictionary
+     * @param key
+     * @return success or error message
+     */
     public String remove(String key){
         if (!isLegal(key)){
 //            throw new NotAWordException("The word you're going to remove is not valid, it should only contain letters");
             return "The word you're going to remove is not valid, it should only contain letters";
         }
-        Map<String, List<String>> dictionaryMap = getMap(dictionaryFile);
         if (dictionaryMap.get(key) != null) {
             dictionaryMap.remove(key);
         }
@@ -146,12 +167,17 @@ public class MyDictionary {
 
     }
 
+    /**
+     * provide a word and its new meanings for updating
+     * @param key
+     * @param meanings
+     * @return success or error message
+     */
     public String update(String key, List<String> meanings){
         if (!isLegal(key)){
 //            throw new NotAWordException("The word you're going to update is not valid, it should only contain letters");
             return "The word you're going to update is not valid, it should only contain letters";
         }
-        Map<String, List<String>> dictionaryMap = getMap(dictionaryFile);
 
         if (dictionaryMap.get(key) != null) {
             dictionaryMap.put(key, meanings);
@@ -164,19 +190,5 @@ public class MyDictionary {
         return "The word has been successfully updated!";
 
     }
-
-
-    public static void main(String[] args) throws IOException {
-//        ArrayList<String> strings = new ArrayList<>();
-//        strings.add("wow");
-//        strings.add("lol");
-//        strings.add("uou");
-//        add("Pz",strings);
-//        remove("Pz");
-        MyDictionary myDictionary = new MyDictionary();
-        System.out.println(myDictionary.query("Pz"));
-
-
-
-    }
+    
 }
